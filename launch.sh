@@ -84,6 +84,11 @@ install() {
   if [ $RET -ne 0 ]; then
     autoconf -i
   fi
+  ./configure && make
+
+  RET=$?; if [ $RET -ne 0 ]; then
+    echo "Error. Exiting."; exit $RET;
+  fi
   cd ..
   install_luarocks
   install_rocks
