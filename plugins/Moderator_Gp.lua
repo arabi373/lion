@@ -15,12 +15,8 @@ local function check_member(cb_extra, success, result)
           set_name = string.gsub(msg.to.print_name, '_', ' '),
           lock_name = 'yes',
           lock_photo = 'no',
-          lock_leave = 'no',
           lock_member = 'no',
           flood = 'yes',
-          antilink = "yes",
-          lock_join = 'no',
-          antitag = "no"
         }
       }
       save_data(_config.moderation.data, data)
@@ -52,11 +48,7 @@ local function check_member_modadd(cb_extra, success, result)
           lock_name = 'yes',
           lock_photo = 'no',
           lock_member = 'no',
-          lock_join = 'no',
-          lock_leave = 'no',
           flood = 'yes'
-          antilink = "yes",
-          antitag = "no"
         }
       }
       save_data(_config.moderation.data, data)
@@ -119,7 +111,7 @@ local function show_group_settingsmod(msg, data, target)
     	bots_protection = data[tostring(msg.to.id)]['settings']['lock_bots']
    	end
   local settings = data[tostring(target)]['settings']
-  local text = "Group settings:\nLock group Leave : "..settings.lock_leave.."\nLock group Tag : "..settings.antitag.."\nLock group link : "..settings.antilink.."\nLock group join : "..settings.lock_join.."\nLock group name : "..settings.lock_name.."\nLock group photo : "..settings.lock_photo.."\nLock group member : "..settings.lock_member.."\nflood sensitivity : "..NUM_MSG_MAX.."\nBot protection : "..bots_protection
+  local text = "Group settings:\nLock group Engish : "..settings.lock_english.."\nLock group Leave : "..settings.lock_leave.."\nLock group Tag : "..settings.antitag.."\nLock group link : "..settings.antilink.."\nLock group join : "..settings.lock_join.."\nLock group name : "..settings.lock_name.."\nLock group photo : "..settings.lock_photo.."\nLock group member : "..settings.lock_member.."\nflood sensitivity : "..NUM_MSG_MAX.."\nBot protection : "..bots_protection
   return text
 end
 
@@ -269,12 +261,11 @@ local function unlock_group_leave(msg, data, target)
     return 'Ban leaver has been unlocked'
   end
 end
-
-local group_english_lock = data[tostring(target)]['settings']['english']
+local group_english_lock = data[tostring(target)]['settings']['lock_english']
 if group_english_lock == 'yes' then
 return 'english is already locked'
 else
-data[tostring(target)]['settings']['english'] = 'yes'
+data[tostring(target)]['settings']['lock_english'] = 'yes'
 save_data(_config.moderation.data, data)
 return 'english has been locked'
 end
@@ -283,11 +274,11 @@ local function unlock_group_english(msg, data, target)
 if not is_momod(msg) then
 return "For moderators only!"
 end
-local group_english_lock = data[tostring(target)]['settings']['english']
+local group_english_lock = data[tostring(target)]['settings']['lock_english']
 if group_english_lock == 'no' then
 return 'english is already unlocked'
 else
-data[tostring(target)]['settings']['english'] = 'no'
+data[tostring(target)]['settings']['lock_english'] = 'no'
 save_data(_config.moderation.data, data)
 return 'english has been unlocked'
 end
@@ -585,11 +576,11 @@ local function run(msg, matches)
       load_photo(msg.id, set_group_photo, msg)
     end
   end
-  if matches[1] == 'addgp' then
+  if matches[1] == 'add' then
     print("group "..msg.to.print_name.."("..msg.to.id..") added")
     return modadd(msg)
   end
-   if matches[1] == 'remgp' then
+   if matches[1] == 'rem' then
     print("group "..msg.to.print_name.."("..msg.to.id..") removed")
     return modrem(msg)
   end
@@ -822,6 +813,10 @@ local function run(msg, matches)
         savelog(msg.to.id, name_log.." ["..msg.from.id.."] locked arabic ")
         return lock_group_arabic(msg, data, target)
       end
+      if matches[2] == 'english' then
+        savelog(msg.to.id, name_log.." ["..msg.from.id.."] locked english ")
+        return lock_group_english(msg, data, target)
+      end
       if matches[2] == 'bots' then
         savelog(msg.to.id, name_log.." ["..msg.from.id.."] locked bots ")
         return lock_group_bots(msg, data, target)
@@ -860,6 +855,10 @@ local function run(msg, matches)
       if matches[2] == 'join' then
         savelog(msg.to.id, name_log.." ["..msg.from.id.."] unlocked joining link ")
         return unlock_group_join(msg, data, target)
+      end
+      if matches[2] == 'english' then
+        savelog(msg.to.id, name_log.." ["..msg.from.id.."] unlocked English ")
+        return unlock_group_english(msg, data, target)
       end
       if matches[2] == 'tag' then
        savelog(msg.to.id, name_log.." ["..msg.from.id.."] unlocked tag ")
@@ -1001,8 +1000,8 @@ local function run(msg, matches)
 end
 return {
   patterns = {
-  "^[!/](addgp)$",
-  "^[!/](remgp)$",
+  "^[!/](add)$",
+  "^[!/](rem)$",
   "^[!/](rules)$",
   "^[!/](about)$",
   "^[!/](setname) (.*)$",
