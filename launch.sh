@@ -67,7 +67,7 @@ install_rocks() {
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
   fi
-  
+
   ./.luarocks/bin/luarocks install serpent
   RET=$?; if [ $RET -ne 0 ];
     then echo "Error. Exiting."; exit $RET;
@@ -77,16 +77,12 @@ install_rocks() {
 install() {
   git pull
   git submodule update --init --recursive
-  cd tg && ./configure && make
-  
-  RET=$?; if [ $RET -ne 0 ]; then
-    echo "Trying without Python...";
-    ./configure --disable-python && make
-    RET=$?
-  fi
-  
+  patch -i "patches/disable-python-and-libjansson.patch" -p 0 --batch --forward
+  RET=$?;
+
+  cd tg
   if [ $RET -ne 0 ]; then
-    echo "Error. Exiting."; exit $RET;
+    autoconf -i
   fi
   cd ..
   install_luarocks
@@ -110,5 +106,5 @@ else
     exit 1
   fi
 
-  ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/creed.lua -l 1 -E
+  ./tg/bin/telegram-cli -k ./tg/tg-server.pub -s ./bot/creed.lua -l 1 -E $@
 fi
